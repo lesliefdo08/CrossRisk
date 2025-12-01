@@ -1,3 +1,33 @@
+/*******************************************************************************
+ * File: analytics/ai_sql_queries.sql
+ * Purpose: Leverages Snowflake Cortex AI (Mistral Large) to generate natural
+ *          language explanations, summaries, and insights from risk data.
+ * 
+ * Schema/Objects:
+ * - Functions: generate_dataset_summary, explain_risk_anomaly,
+ *   explain_fraud_pattern, explain_regional_trend, ask_question_about_risk
+ * - Procedures: generate_high_risk_explanations,
+ *   generate_fraud_pattern_explanations, generate_regional_trend_explanations,
+ *   populate_approved_questions, refresh_all_ai_insights
+ * - Populates: AI_INSIGHTS.ai_explanations, approved_questions_cache
+ * 
+ * Dependencies:
+ * - Requires all analytics scripts executed first (risk_engine.sql)
+ * - Requires Snowflake Cortex AI enabled in account
+ * - Uses mistral-large model for text generation
+ *
+ * Privacy/Security:
+ * - AI only accesses aggregated data, never raw customer records
+ * - Pre-approved questions limit query surface area
+ * - All AI explanations logged with context for audit trail
+ *  
+ * Usage:
+ * snowsql -f snowflake/analytics/ai_sql_queries.sql
+ *
+ * Author: Leslie Fernando
+ * Created: 2024 (Snowflake Hackathon)
+ ******************************************************************************/
+
 -- ============================================================================
 -- CrossRisk Platform - AI SQL Queries (Snowflake Cortex)
 -- ============================================================================
@@ -14,6 +44,7 @@ USE WAREHOUSE CROSSRISK_AI_WH;
 -- ============================================================================
 
 -- Generate natural language summary of risk dataset
+-- Uses Snowflake Cortex to create executive-level summary
 CREATE OR REPLACE FUNCTION generate_dataset_summary()
 RETURNS VARCHAR
 LANGUAGE SQL
@@ -103,6 +134,7 @@ $$;
 -- ============================================================================
 
 -- Generate and store AI explanation for all high-risk segments
+-- Processes top 20 high/critical risk segments to manage API costs
 CREATE OR REPLACE PROCEDURE generate_high_risk_explanations()
 RETURNS VARCHAR
 LANGUAGE SQL
@@ -231,6 +263,7 @@ $$;
 -- ============================================================================
 
 -- Populate pre-approved questions with AI summaries
+-- Creates 5 standard questions with cached results and AI explanations
 CREATE OR REPLACE PROCEDURE populate_approved_questions()
 RETURNS VARCHAR
 LANGUAGE SQL

@@ -1,3 +1,33 @@
+/*******************************************************************************
+ * File: analytics/risk_engine.sql
+ * Purpose: Core risk analytics engine that calculates composite risk scores,
+ *          detects fraud patterns, and generates cross-organizational insights.
+ * 
+ * Schema/Objects:
+ * - Functions: calculate_composite_risk, calculate_fraud_correlation,
+ *   get_risk_category
+ * - Views: v_risk_join_aggregated, v_segment_risk_profile,
+ *   v_age_group_comparison, v_occupation_risk_analysis
+ * - Procedures: refresh_risk_aggregations, calculate_regional_trends,
+ *   detect_fraud_signals, run_full_analytics_refresh
+ * - Table: risk_category_definitions (populated with risk thresholds)
+ * 
+ * Dependencies:
+ * - Requires setup.sql, schemas.sql, and masking_policies.sql executed first
+ * - Needs data in RAW_DATA tables (bank and insurance)
+ *
+ * Privacy/Security:
+ * - All aggregations enforce k-anonymity with HAVING COUNT >= 3
+ * - No individual customer data exposed, only grouped statistics
+ * - Fraud detection operates on aggregated patterns only
+ *  
+ * Usage:
+ * snowsql -f snowflake/analytics/risk_engine.sql
+ *
+ * Author: Leslie Fernando
+ * Created: 2024 (Snowflake Hackathon)
+ ******************************************************************************/
+
 -- ============================================================================
 -- CrossRisk Platform - Risk Analytics Engine
 -- ============================================================================
@@ -23,6 +53,8 @@ INSERT INTO risk_category_definitions (category, min_score, max_score, descripti
 -- COMPOSITE RISK CALCULATION FUNCTION
 -- ============================================================================
 
+-- Calculates weighted composite risk score from bank and insurance data
+-- Formula: (bank_risk * 0.6 + insurance_risk * 0.4) + penalties for fraud flags
 CREATE OR REPLACE FUNCTION calculate_composite_risk(
     bank_risk FLOAT,
     insurance_risk FLOAT,
@@ -45,6 +77,8 @@ $$;
 -- FRAUD CORRELATION DETECTION FUNCTION
 -- ============================================================================
 
+-- Detects fraud correlation between banking and insurance signals
+-- Returns confidence score (0.0-1.0) based on cross-organizational patterns
 CREATE OR REPLACE FUNCTION calculate_fraud_correlation(
     fraud_flags INT,
     claim_flags INT,

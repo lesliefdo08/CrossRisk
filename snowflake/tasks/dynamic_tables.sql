@@ -1,3 +1,30 @@
+/*******************************************************************************
+ * File: tasks/dynamic_tables.sql
+ * Purpose: Creates dynamic tables with automatic refresh capabilities for
+ *          real-time analytics dashboards and reporting.
+ * 
+ * Schema/Objects:
+ * - Dynamic tables: dt_realtime_risk_aggregation, dt_age_group_stats,
+ *   dt_regional_metrics, dt_occupation_risk_profile, dt_high_risk_tracker,
+ *   dt_fraud_correlation, dt_daily_summary, dt_trend_comparison
+ * - TARGET_LAG ranges from 5 minutes to 1 hour
+ * 
+ * Dependencies:
+ * - Requires setup.sql, schemas.sql, and analytics scripts executed first
+ * - Source tables in RAW_DATA schema must exist
+ *
+ * Privacy/Security:
+ * - All dynamic tables enforce k-anonymity (record_count >= 3)
+ * - No raw customer data exposed, only aggregated metrics
+ * - Automatically inherits masking policies from source tables
+ *  
+ * Usage:
+ * snowsql -f snowflake/tasks/dynamic_tables.sql
+ *
+ * Author: Leslie Fernando
+ * Created: 2024 (Snowflake Hackathon)
+ ******************************************************************************/
+
 -- ============================================================================
 -- CrossRisk Platform - Dynamic Tables
 -- ============================================================================
@@ -14,7 +41,8 @@ USE WAREHOUSE CROSSRISK_ANALYTICS_WH;
 -- ============================================================================
 
 -- Dynamic table for real-time risk aggregations
--- Automatically refreshes when source data changes
+-- Automatically refreshes within 5 minutes when source data changes
+-- Provides the foundation for all downstream analytics
 CREATE OR REPLACE DYNAMIC TABLE dt_realtime_risk_aggregation
     TARGET_LAG = '5 minutes'
     WAREHOUSE = CROSSRISK_ANALYTICS_WH

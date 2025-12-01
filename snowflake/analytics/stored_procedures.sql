@@ -1,3 +1,31 @@
+/*******************************************************************************
+ * File: analytics/stored_procedures.sql
+ * Purpose: Utility stored procedures for data loading, quality validation,
+ *          compliance checks, maintenance, and emergency operations.
+ * 
+ * Schema/Objects:
+ * - Data loading: load_bank_data, load_insurance_data
+ * - Quality checks: validate_data_quality, check_k_anonymity_compliance
+ * - Maintenance: run_complete_data_refresh, archive_old_audit_logs
+ * - Emergency: emergency_data_freeze, unfreeze_data_operations
+ * - Monitoring: system_health_check, log_query_access
+ * 
+ * Dependencies:
+ * - Requires all previous scripts executed (setup, schemas, governance)
+ * - Needs EXECUTE MANAGED TASK privilege for task procedures
+ *
+ * Privacy/Security:
+ * - K-anonymity compliance checking procedure
+ * - Emergency freeze prevents data modifications during incidents
+ * - Data quality validation ensures matching records between sources
+ *  
+ * Usage:
+ * snowsql -f snowflake/analytics/stored_procedures.sql
+ *
+ * Author: Leslie Fernando
+ * Created: 2024 (Snowflake Hackathon)
+ ******************************************************************************/
+
 -- ============================================================================
 -- CrossRisk Platform - Stored Procedures
 -- ============================================================================
@@ -13,6 +41,7 @@ USE WAREHOUSE CROSSRISK_ETL_WH;
 -- ============================================================================
 
 -- Load bank data from CSV file
+-- Copies data from staged CSV file into bank_customer_risk_summary table
 CREATE OR REPLACE PROCEDURE load_bank_data()
 RETURNS VARCHAR
 LANGUAGE SQL
@@ -111,6 +140,7 @@ $$;
 -- ============================================================================
 
 -- Verify k-anonymity compliance
+-- Ensures all aggregated segments have at least k=3 records for privacy
 CREATE OR REPLACE PROCEDURE check_k_anonymity_compliance()
 RETURNS VARCHAR
 LANGUAGE SQL

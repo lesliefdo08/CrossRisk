@@ -1,3 +1,34 @@
+/*******************************************************************************
+ * File: masking_policies.sql
+ * Purpose: Implements comprehensive data masking, row access policies, and
+ *          Snowflake Horizon governance controls for privacy protection.
+ * 
+ * Schema/Objects:
+ * - Masking policies: mask_customer_id, mask_financial_details, mask_risk_score
+ * - Row access policies: high_risk_access
+ * - Projection policies: restrict_raw_export
+ * - Aggregation policies: enforce_k_anonymity
+ * - Semantic tags: data_classification, pii_category, retention_period
+ * - Secure views: bank_aggregated_view, insurance_aggregated_view,
+ *   cross_org_insights
+ * 
+ * Dependencies:
+ * - Requires setup.sql and schemas.sql to be executed first
+ * - Requires ACCOUNTADMIN or GOVERNANCE role for policy creation
+ *
+ * Privacy/Security:
+ * - Dynamic masking based on current user role
+ * - Row-level security restricts access to high-risk records
+ * - Enforces minimum group size (k=3) for all aggregations
+ * - Tags all data with sensitivity and retention classifications
+ *  
+ * Usage:
+ * snowsql -f snowflake/masking_policies.sql
+ *
+ * Author: Leslie Fernando
+ * Created: 2024 (Snowflake Hackathon)
+ ******************************************************************************/
+
 -- ============================================================================
 -- CrossRisk Platform - Data Masking & Privacy Policies
 -- ============================================================================
@@ -13,6 +44,7 @@ USE SCHEMA GOVERNANCE;
 -- ============================================================================
 
 -- Mask customer identifiers for non-privileged users
+-- Only admins and privacy officers can see actual hashed IDs
 CREATE OR REPLACE MASKING POLICY mask_customer_id AS (val VARCHAR) RETURNS VARCHAR ->
     CASE
         WHEN CURRENT_ROLE() IN ('ACCOUNTADMIN', 'CROSSRISK_ADMIN', 'PRIVACY_OFFICER') 
@@ -21,6 +53,7 @@ CREATE OR REPLACE MASKING POLICY mask_customer_id AS (val VARCHAR) RETURNS VARCH
     END;
 
 -- Mask detailed financial bands to broader categories
+-- Converts specific ranges to LOW/MEDIUM/HIGH for lower-privilege roles
 CREATE OR REPLACE MASKING POLICY mask_financial_details AS (val VARCHAR) RETURNS VARCHAR ->
     CASE
         WHEN CURRENT_ROLE() IN ('ACCOUNTADMIN', 'CROSSRISK_ADMIN', 'ANALYST_SENIOR') 
@@ -88,6 +121,7 @@ ALTER TABLE RAW_DATA.insurance_claim_risk_summary
 -- ============================================================================
 
 -- Restrict access to high-risk records based on role
+-- Limits visibility of critical risk records to authorized personnel only
 CREATE OR REPLACE ROW ACCESS POLICY high_risk_access AS (risk_score FLOAT) RETURNS BOOLEAN ->
     CASE
         WHEN CURRENT_ROLE() IN ('ACCOUNTADMIN', 'CROSSRISK_ADMIN', 'RISK_MANAGER') 

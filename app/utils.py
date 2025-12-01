@@ -133,9 +133,9 @@ def create_privacy_badge(segment_size: int, min_k: int = 3) -> str:
         HTML formatted badge
     """
     if segment_size >= min_k:
-        return f'<span style="background-color: #2ca02c; color: white; padding: 3px 8px; border-radius: 3px;">✓ Privacy Compliant (k={segment_size})</span>'
+        return f'<span style="background-color: #2ca02c; color: white; padding: 3px 8px; border-radius: 3px;">COMPLIANT - Privacy Protected (k={segment_size})</span>'
     else:
-        return f'<span style="background-color: #d62728; color: white; padding: 3px 8px; border-radius: 3px;">⚠ Below k-anonymity threshold</span>'
+        return f'<span style="background-color: #d62728; color: white; padding: 3px 8px; border-radius: 3px;">WARNING - Below k-anonymity threshold</span>'
 
 def calculate_risk_distribution(df: pd.DataFrame, 
                                 risk_column: str = 'COMPOSITE_RISK_SCORE') -> Dict[str, int]:

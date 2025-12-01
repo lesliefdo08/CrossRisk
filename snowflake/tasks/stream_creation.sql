@@ -1,3 +1,30 @@
+/*******************************************************************************
+ * File: tasks/stream_creation.sql
+ * Purpose: Creates Snowflake streams for change data capture (CDC) to enable
+ *          real-time analytics and event-driven task execution.
+ * 
+ * Schema/Objects:
+ * - Streams: bank_data_changes, insurance_data_changes,
+ *   risk_aggregation_changes, fraud_signal_changes, audit_log_stream,
+ *   compliance_log_stream
+ * - Procedure: check_stream_status (monitors pending changes)
+ * 
+ * Dependencies:
+ * - Requires setup.sql and schemas.sql to be executed first
+ * - Tables being streamed must exist before creating streams
+ *
+ * Privacy/Security:
+ * - Streams track changes without exposing raw data
+ * - Audit stream enables real-time compliance monitoring
+ * - Used by tasks to trigger analytics only when data changes
+ *  
+ * Usage:
+ * snowsql -f snowflake/tasks/stream_creation.sql
+ *
+ * Author: Leslie Fernando
+ * Created: 2024 (Snowflake Hackathon)
+ ******************************************************************************/
+
 -- ============================================================================
 -- CrossRisk Platform - Stream Creation
 -- ============================================================================
@@ -13,6 +40,7 @@ USE WAREHOUSE CROSSRISK_ETL_WH;
 -- ============================================================================
 
 -- Stream to track changes in bank data
+-- Captures INSERT, UPDATE, DELETE operations for incremental processing
 CREATE OR REPLACE STREAM bank_data_changes
     ON TABLE RAW_DATA.bank_customer_risk_summary
     COMMENT = 'Tracks inserts, updates, and deletes in bank customer data';

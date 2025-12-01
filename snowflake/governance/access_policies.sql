@@ -1,3 +1,32 @@
+/*******************************************************************************
+ * File: governance/access_policies.sql
+ * Purpose: Establishes role-based access control (RBAC) with granular
+ *          permissions for different user types and data consumers.
+ * 
+ * Schema/Objects:
+ * - Roles: CROSSRISK_ADMIN, PRIVACY_OFFICER, ANALYST_SENIOR, ANALYST_JUNIOR,
+ *   BANK_DATA_PROVIDER, INSURANCE_DATA_PROVIDER, STREAMLIT_APP_ROLE, VIEWER
+ * - Grants on all databases, schemas, tables, views, warehouses
+ * - Future grants for automatic permission propagation
+ * - Role hierarchy with inheritance
+ * 
+ * Dependencies:
+ * - Requires setup.sql and schemas.sql to be executed first
+ * - Requires SECURITYADMIN or ACCOUNTADMIN role
+ *
+ * Privacy/Security:
+ * - Implements principle of least privilege
+ * - Separates data providers from data consumers
+ * - Different access levels for senior vs junior analysts
+ * - Clean room views accessible only to authorized roles
+ *  
+ * Usage:
+ * snowsql -f snowflake/governance/access_policies.sql
+ *
+ * Author: Leslie Fernando
+ * Created: 2024 (Snowflake Hackathon)
+ ******************************************************************************/
+
 -- ============================================================================
 -- CrossRisk Platform - Access Policies
 -- ============================================================================
@@ -12,9 +41,11 @@ USE SCHEMA GOVERNANCE;
 -- ============================================================================
 
 -- Administrative roles
+-- CROSSRISK_ADMIN has full platform access for system management
 CREATE ROLE IF NOT EXISTS CROSSRISK_ADMIN 
     COMMENT = 'Full administrative access to CrossRisk platform';
 
+-- PRIVACY_OFFICER oversees compliance and can access raw data for audits
 CREATE ROLE IF NOT EXISTS PRIVACY_OFFICER 
     COMMENT = 'Privacy and compliance oversight role';
 

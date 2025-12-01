@@ -3,24 +3,21 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
-from db_connection import run_query, is_offline_mode
+from Home import run_query
 
-st.set_page_config(page_title="Governance & Audit", page_icon="📊", layout="wide")
+st.set_page_config(page_title="Governance & Audit", page_icon="🔒", layout="wide")
 
-st.title("Governance & Compliance Dashboard")
+st.title("🔒 Governance & Compliance Dashboard")
 
 st.markdown("""
     Monitor access patterns, compliance checks, and audit trails to ensure data privacy 
     and regulatory compliance across the CrossRisk platform.
 """)
 
-if is_offline_mode():
-    st.info("Running in offline demo mode with sample data. Connect to Snowflake for live analytics.")
-
 st.markdown("---")
 
 # Compliance overview
-st.subheader("Compliance Status Overview")
+st.subheader("✅ Compliance Status Overview")
 
 col1, col2, col3, col4 = st.columns(4)
 
@@ -109,7 +106,7 @@ except Exception as e:
 st.markdown("---")
 
 # Detailed compliance log
-st.subheader("Compliance Check Log")
+st.subheader("📋 Compliance Check Log")
 
 # Date filter
 col1, col2, col3 = st.columns([2, 2, 1])
@@ -125,7 +122,7 @@ with col1:
 with col2:
     check_type_filter = st.multiselect(
         "Check Type",
-        options=['All'] + (list(compliance_df['CHECK_TYPE'].unique()) if 'compliance_df' in locals() and not compliance_df.empty else []),
+        options=['All'] + list(compliance_df['CHECK_TYPE'].unique()) if not compliance_df.empty else ['All'],
         default=['All']
     )
 
@@ -187,7 +184,7 @@ try:
         
         # Export log
         st.download_button(
-            label="Export Compliance Log",
+            label="📥 Export Compliance Log",
             data=display_log.to_csv(index=False),
             file_name=f"crossrisk_compliance_log_{pd.Timestamp.now().strftime('%Y%m%d')}.csv",
             mime="text/csv"
@@ -201,7 +198,7 @@ except Exception as e:
 st.markdown("---")
 
 # Access audit section
-st.subheader("Access Audit Trail")
+st.subheader("🔍 Access Audit Trail")
 
 st.markdown("""
     Monitor data access patterns to identify unusual activity and ensure proper data governance.
@@ -239,8 +236,6 @@ try:
                 st.metric("Rows Accessed", f"{int(rows_accessed):,}")
             else:
                 st.metric("Rows Accessed", "N/A")
-    else:
-        st.info("No access audit data available for the last 7 days.")
 
 except Exception as e:
     st.warning(f"Unable to load access metrics: {str(e)}")
@@ -292,8 +287,6 @@ try:
             display_user.columns = ['User', 'Role', 'Queries', 'Rows Accessed']
             
             st.dataframe(display_user, use_container_width=True, hide_index=True, height=400)
-    else:
-        st.info("No user access data available for the last 30 days.")
 
 except Exception as e:
     st.warning(f"Unable to load user access data: {str(e)}")
@@ -301,7 +294,7 @@ except Exception as e:
 st.markdown("---")
 
 # Access patterns over time
-st.subheader("Access Patterns Over Time")
+st.subheader("📊 Access Patterns Over Time")
 
 timeline_query = """
 SELECT 
@@ -359,7 +352,7 @@ try:
         anomalies = timeline_df[timeline_df['QUERY_COUNT'] > threshold]
         
         if not anomalies.empty:
-            st.warning(f"Anomaly Detection: {len(anomalies)} day(s) with unusually high query volume detected.")
+            st.warning(f"⚠️ **Anomaly Detection:** {len(anomalies)} day(s) with unusually high query volume detected.")
             st.dataframe(
                 anomalies[['ACCESS_DATE', 'QUERY_COUNT', 'UNIQUE_USERS']].rename(
                     columns={'ACCESS_DATE': 'Date', 'QUERY_COUNT': 'Queries', 'UNIQUE_USERS': 'Users'}
@@ -367,8 +360,6 @@ try:
                 use_container_width=True,
                 hide_index=True
             )
-    else:
-        st.info("No access timeline data available for the last 30 days.")
 
 except Exception as e:
     st.warning(f"Unable to load access timeline: {str(e)}")
@@ -376,7 +367,7 @@ except Exception as e:
 st.markdown("---")
 
 # Privacy metrics
-st.subheader("Privacy Protection Metrics")
+st.subheader("🔐 Privacy Protection Metrics")
 
 privacy_query = """
 SELECT 
@@ -407,14 +398,12 @@ try:
     if not privacy_df.empty:
         for _, row in privacy_df.iterrows():
             if row['STATUS'] == 'COMPLIANT' or row['STATUS'] == 'ACTIVE':
-                st.success(f"**{row['METRIC']}:** {row['STATUS']}")
+                st.success(f"✅ **{row['METRIC']}:** {row['STATUS']}")
             else:
-                st.error(f"**{row['METRIC']}:** {row['STATUS']}")
+                st.error(f"❌ **{row['METRIC']}:** {row['STATUS']}")
             
             if row['METRIC'] == 'K-Anonymity Compliance':
                 st.caption(f"Minimum group size: {row['MIN_GROUP_SIZE']} | Total segments: {row['TOTAL_SEGMENTS']}")
-    else:
-        st.info("Privacy metrics data not available.")
 
 except Exception as e:
     st.info("Privacy metrics require admin privileges to view policy references.")
@@ -425,7 +414,7 @@ st.markdown("### Active Data Protection Measures")
 protection_summary = pd.DataFrame({
     'Protection Type': [
         'Dynamic Data Masking',
-        'K-Anonymity Enforcement (k>=3)',
+        'K-Anonymity Enforcement (k≥3)',
         'Row Access Policies',
         'Secure Clean Room Views',
         'Audit Logging'
@@ -445,7 +434,7 @@ st.dataframe(protection_summary, use_container_width=True, hide_index=True)
 st.markdown("---")
 
 # System health check
-st.subheader("System Health Status")
+st.subheader("🏥 System Health Status")
 
 if st.button("Run System Health Check"):
     with st.spinner("Running health diagnostics..."):
@@ -481,8 +470,6 @@ if st.button("Run System Health Check"):
                     st.metric("AI Explanations", f"{health_data.get('ai_explanations', 0):,}")
                 
                 st.json(health_data, expanded=False)
-            else:
-                st.warning("Health check returned no data.")
         except Exception as e:
             st.error(f"Health check failed: {str(e)}")
             st.info("Ensure the system_health_check stored procedure has been created.")
@@ -490,7 +477,7 @@ if st.button("Run System Health Check"):
 st.markdown("---")
 
 # Export audit report
-st.subheader("Generate Audit Report")
+st.subheader("📄 Generate Audit Report")
 
 col1, col2 = st.columns(2)
 
@@ -539,7 +526,7 @@ if st.button("Generate Full Audit Report"):
             report_df = run_query(report_query)
             
             if not report_df.empty:
-                st.success(f"Generated report with {len(report_df):,} audit entries")
+                st.success(f"✅ Generated report with {len(report_df):,} audit entries")
                 
                 # Summary stats
                 col1, col2, col3 = st.columns(3)
@@ -558,7 +545,7 @@ if st.button("Generate Full Audit Report"):
                 
                 # Download report
                 st.download_button(
-                    label="Download Complete Audit Report",
+                    label="📥 Download Complete Audit Report",
                     data=report_df.to_csv(index=False),
                     file_name=f"crossrisk_audit_report_{report_start_date}_{report_end_date}.csv",
                     mime="text/csv"

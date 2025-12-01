@@ -2,17 +2,21 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-from Home import run_query, get_snowflake_connection
+from db_connection import run_query, is_offline_mode
 
-st.set_page_config(page_title="Pre-Approved Questions", page_icon="❓", layout="wide")
+st.set_page_config(page_title="Pre-Approved Questions", page_icon="📊", layout="wide")
 
-st.title("❓ Pre-Approved Analytics Questions")
+st.title("Pre-Approved Analytics Questions")
 
 st.markdown("""
     This page provides answers to curated analytics questions that have been pre-approved 
     by data governance teams. Each question is designed to provide actionable insights while 
     maintaining strict privacy standards.
 """)
+
+# Show offline mode warning if applicable
+if is_offline_mode():
+    st.info("Running in offline demo mode with sample data. Connect to Snowflake for live analytics.")
 
 # Fetch all approved questions
 questions_query = """
@@ -69,7 +73,7 @@ try:
     col1, col2 = st.columns([3, 1])
     
     with col1:
-        st.subheader(f"📊 {question_row['QUESTION_TEXT']}")
+        st.subheader(f"{question_row['QUESTION_TEXT']}")
     
     with col2:
         st.metric("Category", question_row['CATEGORY'])
@@ -104,45 +108,51 @@ try:
             END
         """
         
-        risk_df = run_query(risk_dist_query)
-        
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            # Pie chart
-            fig = px.pie(
-                risk_df,
-                values='CUSTOMER_COUNT',
-                names='RISK_CATEGORY',
-                title='Customer Distribution',
-                color='RISK_CATEGORY',
-                color_discrete_map={
-                    'CRITICAL': '#d62728',
-                    'HIGH': '#ff7f0e',
-                    'MEDIUM': '#ffbb78',
-                    'LOW': '#2ca02c'
-                }
-            )
-            st.plotly_chart(fig, use_container_width=True)
-        
-        with col2:
-            # Bar chart
-            fig = px.bar(
-                risk_df,
-                x='RISK_CATEGORY',
-                y='CUSTOMER_COUNT',
-                color='AVG_RISK_SCORE',
-                title='Customers by Risk Category',
-                color_continuous_scale='RdYlGn_r',
-                labels={'CUSTOMER_COUNT': 'Number of Customers', 'RISK_CATEGORY': 'Risk Level'}
-            )
-            st.plotly_chart(fig, use_container_width=True)
-        
-        # Summary table
-        st.markdown("### Detailed Breakdown")
-        display_df = risk_df.copy()
-        display_df.columns = ['Risk Category', 'Segments', 'Customers', 'Avg Risk Score']
-        st.dataframe(display_df, use_container_width=True, hide_index=True)
+        try:
+            risk_df = run_query(risk_dist_query)
+            
+            if not risk_df.empty:
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    # Pie chart
+                    fig = px.pie(
+                        risk_df,
+                        values='CUSTOMER_COUNT',
+                        names='RISK_CATEGORY',
+                        title='Customer Distribution',
+                        color='RISK_CATEGORY',
+                        color_discrete_map={
+                            'CRITICAL': '#d62728',
+                            'HIGH': '#ff7f0e',
+                            'MEDIUM': '#ffbb78',
+                            'LOW': '#2ca02c'
+                        }
+                    )
+                    st.plotly_chart(fig, use_container_width=True)
+                
+                with col2:
+                    # Bar chart
+                    fig = px.bar(
+                        risk_df,
+                        x='RISK_CATEGORY',
+                        y='CUSTOMER_COUNT',
+                        color='AVG_RISK_SCORE',
+                        title='Customers by Risk Category',
+                        color_continuous_scale='RdYlGn_r',
+                        labels={'CUSTOMER_COUNT': 'Number of Customers', 'RISK_CATEGORY': 'Risk Level'}
+                    )
+                    st.plotly_chart(fig, use_container_width=True)
+                
+                # Summary table
+                st.markdown("### Detailed Breakdown")
+                display_df = risk_df.copy()
+                display_df.columns = ['Risk Category', 'Segments', 'Customers', 'Avg Risk Score']
+                st.dataframe(display_df, use_container_width=True, hide_index=True)
+            else:
+                st.warning("No risk distribution data available.")
+        except Exception as e:
+            st.error(f"Error loading risk distribution: {str(e)}")
     
     elif selected_question_id == 'Q002':
         # Age group risk analysis
@@ -163,49 +173,55 @@ try:
         ORDER BY avg_risk DESC
         """
         
-        age_df = run_query(age_query)
-        
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            # Risk score by age
-            fig = px.bar(
-                age_df,
-                x='AGE_GROUP',
-                y='AVG_RISK',
-                title='Average Risk Score by Age Group',
-                color='AVG_RISK',
-                color_continuous_scale='RdYlGn_r',
-                labels={'AVG_RISK': 'Risk Score', 'AGE_GROUP': 'Age Group'}
-            )
-            st.plotly_chart(fig, use_container_width=True)
-        
-        with col2:
-            # Stacked bar for risk breakdown
-            breakdown_df = age_df[['AGE_GROUP', 'CRITICAL_COUNT', 'HIGH_COUNT', 'MEDIUM_COUNT', 'LOW_COUNT']].copy()
-            breakdown_df = breakdown_df.melt(id_vars='AGE_GROUP', var_name='Risk Level', value_name='Count')
-            breakdown_df['Risk Level'] = breakdown_df['Risk Level'].str.replace('_COUNT', '').str.title()
+        try:
+            age_df = run_query(age_query)
             
-            fig = px.bar(
-                breakdown_df,
-                x='AGE_GROUP',
-                y='Count',
-                color='Risk Level',
-                title='Risk Category Distribution by Age',
-                color_discrete_map={
-                    'Critical': '#d62728',
-                    'High': '#ff7f0e',
-                    'Medium': '#ffbb78',
-                    'Low': '#2ca02c'
-                }
-            )
-            st.plotly_chart(fig, use_container_width=True)
-        
-        # Table
-        st.markdown("### Age Group Statistics")
-        display_df = age_df.copy()
-        display_df.columns = ['Age Group', 'Customers', 'Avg Risk', 'Critical', 'High', 'Medium', 'Low']
-        st.dataframe(display_df, use_container_width=True, hide_index=True)
+            if not age_df.empty:
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    # Risk score by age
+                    fig = px.bar(
+                        age_df,
+                        x='AGE_GROUP',
+                        y='AVG_RISK',
+                        title='Average Risk Score by Age Group',
+                        color='AVG_RISK',
+                        color_continuous_scale='RdYlGn_r',
+                        labels={'AVG_RISK': 'Risk Score', 'AGE_GROUP': 'Age Group'}
+                    )
+                    st.plotly_chart(fig, use_container_width=True)
+                
+                with col2:
+                    # Stacked bar for risk breakdown
+                    breakdown_df = age_df[['AGE_GROUP', 'CRITICAL_COUNT', 'HIGH_COUNT', 'MEDIUM_COUNT', 'LOW_COUNT']].copy()
+                    breakdown_df = breakdown_df.melt(id_vars='AGE_GROUP', var_name='Risk Level', value_name='Count')
+                    breakdown_df['Risk Level'] = breakdown_df['Risk Level'].str.replace('_COUNT', '').str.title()
+                    
+                    fig = px.bar(
+                        breakdown_df,
+                        x='AGE_GROUP',
+                        y='Count',
+                        color='Risk Level',
+                        title='Risk Category Distribution by Age',
+                        color_discrete_map={
+                            'Critical': '#d62728',
+                            'High': '#ff7f0e',
+                            'Medium': '#ffbb78',
+                            'Low': '#2ca02c'
+                        }
+                    )
+                    st.plotly_chart(fig, use_container_width=True)
+                
+                # Table
+                st.markdown("### Age Group Statistics")
+                display_df = age_df.copy()
+                display_df.columns = ['Age Group', 'Customers', 'Avg Risk', 'Critical', 'High', 'Medium', 'Low']
+                st.dataframe(display_df, use_container_width=True, hide_index=True)
+            else:
+                st.warning("No age group data available.")
+        except Exception as e:
+            st.error(f"Error loading age group analysis: {str(e)}")
     
     elif selected_question_id == 'Q003':
         # Regional risk hotspots
@@ -225,39 +241,45 @@ try:
         ORDER BY avg_risk DESC
         """
         
-        regional_df = run_query(regional_query)
-        
-        col1, col2 = st.columns([2, 1])
-        
-        with col1:
-            # Map-style bar chart
-            fig = px.bar(
-                regional_df,
-                y='REGION',
-                x='AVG_RISK',
-                orientation='h',
-                title='Average Risk Score by Region',
-                color='AVG_RISK',
-                color_continuous_scale='RdYlGn_r',
-                labels={'AVG_RISK': 'Risk Score', 'REGION': 'Region'}
-            )
-            fig.update_layout(height=400)
-            st.plotly_chart(fig, use_container_width=True)
-        
-        with col2:
-            st.markdown("### Top Risk Regions")
-            for _, row in regional_df.head(5).iterrows():
-                st.metric(
-                    row['REGION'],
-                    f"{row['AVG_RISK']}",
-                    f"{row['HIGH_RISK_PCT']}% high risk"
-                )
-        
-        # Detailed table
-        st.markdown("### Regional Statistics")
-        display_df = regional_df.copy()
-        display_df.columns = ['Region', 'Avg Risk', 'Customers', 'Segments', 'High Risk Count', 'High Risk %']
-        st.dataframe(display_df, use_container_width=True, hide_index=True)
+        try:
+            regional_df = run_query(regional_query)
+            
+            if not regional_df.empty:
+                col1, col2 = st.columns([2, 1])
+                
+                with col1:
+                    # Map-style bar chart
+                    fig = px.bar(
+                        regional_df,
+                        y='REGION',
+                        x='AVG_RISK',
+                        orientation='h',
+                        title='Average Risk Score by Region',
+                        color='AVG_RISK',
+                        color_continuous_scale='RdYlGn_r',
+                        labels={'AVG_RISK': 'Risk Score', 'REGION': 'Region'}
+                    )
+                    fig.update_layout(height=400)
+                    st.plotly_chart(fig, use_container_width=True)
+                
+                with col2:
+                    st.markdown("### Top Risk Regions")
+                    for _, row in regional_df.head(5).iterrows():
+                        st.metric(
+                            row['REGION'],
+                            f"{row['AVG_RISK']}",
+                            f"{row['HIGH_RISK_PCT']}% high risk"
+                        )
+                
+                # Detailed table
+                st.markdown("### Regional Statistics")
+                display_df = regional_df.copy()
+                display_df.columns = ['Region', 'Avg Risk', 'Customers', 'Segments', 'High Risk Count', 'High Risk %']
+                st.dataframe(display_df, use_container_width=True, hide_index=True)
+            else:
+                st.warning("No regional data available.")
+        except Exception as e:
+            st.error(f"Error loading regional analysis: {str(e)}")
     
     elif selected_question_id == 'Q004':
         # Fraud patterns
@@ -276,37 +298,40 @@ try:
         ORDER BY confidence_score DESC, affected_customer_count DESC
         """
         
-        fraud_df = run_query(fraud_query)
-        
-        if not fraud_df.empty:
-            # Scatter plot
-            fig = px.scatter(
-                fraud_df,
-                x='AFFECTED_CUSTOMER_COUNT',
-                y='CONFIDENCE_PERCENTAGE',
-                color='PATTERN_DESCRIPTION',
-                size='AFFECTED_CUSTOMER_COUNT',
-                hover_data=['AGE_GROUP', 'REGION'],
-                title='Fraud Patterns: Confidence vs Impact',
-                labels={
-                    'AFFECTED_CUSTOMER_COUNT': 'Affected Customers',
-                    'CONFIDENCE_PERCENTAGE': 'Confidence %'
-                }
-            )
-            st.plotly_chart(fig, use_container_width=True)
+        try:
+            fraud_df = run_query(fraud_query)
             
-            # Alert cards
-            st.markdown("### Active Fraud Alerts")
-            for _, row in fraud_df.head(5).iterrows():
-                severity = "🔴" if row['CONFIDENCE_PERCENTAGE'] > 80 else "🟠" if row['CONFIDENCE_PERCENTAGE'] > 60 else "🟡"
-                st.warning(
-                    f"{severity} **{row['PATTERN_DESCRIPTION']}**\n\n"
-                    f"Region: {row['REGION']} | Age Group: {row['AGE_GROUP']}\n\n"
-                    f"Affected Customers: {row['AFFECTED_CUSTOMER_COUNT']} | "
-                    f"Confidence: {row['CONFIDENCE_PERCENTAGE']}%"
+            if not fraud_df.empty:
+                # Scatter plot
+                fig = px.scatter(
+                    fraud_df,
+                    x='AFFECTED_CUSTOMER_COUNT',
+                    y='CONFIDENCE_PERCENTAGE',
+                    color='PATTERN_DESCRIPTION',
+                    size='AFFECTED_CUSTOMER_COUNT',
+                    hover_data=['AGE_GROUP', 'REGION'],
+                    title='Fraud Patterns: Confidence vs Impact',
+                    labels={
+                        'AFFECTED_CUSTOMER_COUNT': 'Affected Customers',
+                        'CONFIDENCE_PERCENTAGE': 'Confidence %'
+                    }
                 )
-        else:
-            st.success("✅ No significant fraud patterns detected in the last 30 days.")
+                st.plotly_chart(fig, use_container_width=True)
+                
+                # Alert cards
+                st.markdown("### Active Fraud Alerts")
+                for _, row in fraud_df.head(5).iterrows():
+                    severity_label = "CRITICAL" if row['CONFIDENCE_PERCENTAGE'] > 80 else "HIGH" if row['CONFIDENCE_PERCENTAGE'] > 60 else "MEDIUM"
+                    st.warning(
+                        f"**{severity_label}: {row['PATTERN_DESCRIPTION']}**\n\n"
+                        f"Region: {row['REGION']} | Age Group: {row['AGE_GROUP']}\n\n"
+                        f"Affected Customers: {row['AFFECTED_CUSTOMER_COUNT']} | "
+                        f"Confidence: {row['CONFIDENCE_PERCENTAGE']}%"
+                    )
+            else:
+                st.success("No significant fraud patterns detected in the last 30 days.")
+        except Exception as e:
+            st.error(f"Error loading fraud patterns: {str(e)}")
     
     elif selected_question_id == 'Q005':
         # Occupation risk profiles
@@ -327,52 +352,58 @@ try:
         ORDER BY avg_risk DESC
         """
         
-        occupation_df = run_query(occupation_query)
-        
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            # Overall risk by occupation
-            fig = px.bar(
-                occupation_df,
-                x='OCCUPATION_CATEGORY',
-                y='AVG_RISK',
-                title='Average Risk by Occupation',
-                color='HIGH_RISK_PCT',
-                color_continuous_scale='RdYlGn_r',
-                labels={'AVG_RISK': 'Risk Score', 'OCCUPATION_CATEGORY': 'Occupation'}
-            )
-            fig.update_xaxis(tickangle=-45)
-            st.plotly_chart(fig, use_container_width=True)
-        
-        with col2:
-            # Bank vs Insurance risk
-            comparison_df = occupation_df[['OCCUPATION_CATEGORY', 'AVG_BANK_RISK', 'AVG_INSURANCE_RISK']].copy()
-            comparison_df = comparison_df.melt(id_vars='OCCUPATION_CATEGORY', var_name='Source', value_name='Risk')
-            comparison_df['Source'] = comparison_df['Source'].str.replace('AVG_', '').str.replace('_RISK', '').str.title()
+        try:
+            occupation_df = run_query(occupation_query)
             
-            fig = px.bar(
-                comparison_df,
-                x='OCCUPATION_CATEGORY',
-                y='Risk',
-                color='Source',
-                barmode='group',
-                title='Bank vs Insurance Risk by Occupation',
-                labels={'Risk': 'Risk Score', 'OCCUPATION_CATEGORY': 'Occupation'}
-            )
-            fig.update_xaxis(tickangle=-45)
-            st.plotly_chart(fig, use_container_width=True)
-        
-        # Table
-        st.markdown("### Occupation Statistics")
-        display_df = occupation_df.copy()
-        display_df.columns = ['Occupation', 'Customers', 'Avg Risk', 'Bank Risk', 'Insurance Risk', 'High Risk %']
-        st.dataframe(display_df, use_container_width=True, hide_index=True)
+            if not occupation_df.empty:
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    # Overall risk by occupation
+                    fig = px.bar(
+                        occupation_df,
+                        x='OCCUPATION_CATEGORY',
+                        y='AVG_RISK',
+                        title='Average Risk by Occupation',
+                        color='HIGH_RISK_PCT',
+                        color_continuous_scale='RdYlGn_r',
+                        labels={'AVG_RISK': 'Risk Score', 'OCCUPATION_CATEGORY': 'Occupation'}
+                    )
+                    fig.update_xaxis(tickangle=-45)
+                    st.plotly_chart(fig, use_container_width=True)
+                
+                with col2:
+                    # Bank vs Insurance risk
+                    comparison_df = occupation_df[['OCCUPATION_CATEGORY', 'AVG_BANK_RISK', 'AVG_INSURANCE_RISK']].copy()
+                    comparison_df = comparison_df.melt(id_vars='OCCUPATION_CATEGORY', var_name='Source', value_name='Risk')
+                    comparison_df['Source'] = comparison_df['Source'].str.replace('AVG_', '').str.replace('_RISK', '').str.title()
+                    
+                    fig = px.bar(
+                        comparison_df,
+                        x='OCCUPATION_CATEGORY',
+                        y='Risk',
+                        color='Source',
+                        barmode='group',
+                        title='Bank vs Insurance Risk by Occupation',
+                        labels={'Risk': 'Risk Score', 'OCCUPATION_CATEGORY': 'Occupation'}
+                    )
+                    fig.update_xaxis(tickangle=-45)
+                    st.plotly_chart(fig, use_container_width=True)
+                
+                # Table
+                st.markdown("### Occupation Statistics")
+                display_df = occupation_df.copy()
+                display_df.columns = ['Occupation', 'Customers', 'Avg Risk', 'Bank Risk', 'Insurance Risk', 'High Risk %']
+                st.dataframe(display_df, use_container_width=True, hide_index=True)
+            else:
+                st.warning("No occupation data available.")
+        except Exception as e:
+            st.error(f"Error loading occupation analysis: {str(e)}")
     
     # Export option
     st.markdown("---")
     st.download_button(
-        label="📥 Export Results as CSV",
+        label="Export Results as CSV",
         data=questions_df.to_csv(index=False),
         file_name=f"crossrisk_question_{selected_question_id}_{pd.Timestamp.now().strftime('%Y%m%d')}.csv",
         mime="text/csv"

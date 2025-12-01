@@ -1,3 +1,30 @@
+/*******************************************************************************
+ * File: setup.sql
+ * Purpose: Initializes the CrossRisk platform database, schemas, warehouses,
+ *          and core infrastructure for privacy-safe cross-organization analytics.
+ * 
+ * Schema/Objects:
+ * - CROSSRISK_DB (main database)
+ * - Schemas: RAW_DATA, CLEAN_ROOM, ANALYTICS, GOVERNANCE, AI_INSIGHTS
+ * - Warehouses: CROSSRISK_ETL_WH, CROSSRISK_ANALYTICS_WH, CROSSRISK_AI_WH
+ * - CROSSRISK_STAGE (data loading stage)
+ * - CSV_FORMAT (file format for data imports)
+ * 
+ * Dependencies:
+ * - Must be run first before any other scripts
+ * - Requires SYSADMIN or ACCOUNTADMIN role
+ *
+ * Privacy/Security:
+ * - Creates foundational structure for data isolation and governance
+ * - Sets up separate schemas for raw data, analytics, and clean room operations
+ *  
+ * Usage:
+ * snowsql -f snowflake/setup.sql
+ *
+ * Author: Leslie Fernando
+ * Created: 2024 (Snowflake Hackathon)
+ ******************************************************************************/
+
 -- ============================================================================
 -- CrossRisk Platform - Initial Setup
 -- ============================================================================
@@ -29,6 +56,7 @@ CREATE SCHEMA IF NOT EXISTS AI_INSIGHTS
     COMMENT = 'AI-generated summaries and explanations using Snowflake Cortex';
 
 -- Create warehouses for different workloads
+-- ETL warehouse handles data loading and transformation tasks
 CREATE WAREHOUSE IF NOT EXISTS CROSSRISK_ETL_WH
     WITH WAREHOUSE_SIZE = 'SMALL'
     AUTO_SUSPEND = 60
@@ -36,6 +64,7 @@ CREATE WAREHOUSE IF NOT EXISTS CROSSRISK_ETL_WH
     INITIALLY_SUSPENDED = TRUE
     COMMENT = 'Warehouse for ETL and data processing tasks';
 
+-- Analytics warehouse powers the Streamlit app and interactive queries
 CREATE WAREHOUSE IF NOT EXISTS CROSSRISK_ANALYTICS_WH
     WITH WAREHOUSE_SIZE = 'MEDIUM'
     AUTO_SUSPEND = 120
@@ -43,6 +72,7 @@ CREATE WAREHOUSE IF NOT EXISTS CROSSRISK_ANALYTICS_WH
     INITIALLY_SUSPENDED = TRUE
     COMMENT = 'Warehouse for analytics queries and Streamlit app';
 
+-- AI warehouse dedicated to Snowflake Cortex operations
 CREATE WAREHOUSE IF NOT EXISTS CROSSRISK_AI_WH
     WITH WAREHOUSE_SIZE = 'SMALL'
     AUTO_SUSPEND = 60

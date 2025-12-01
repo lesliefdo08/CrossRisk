@@ -1,3 +1,32 @@
+/*******************************************************************************
+ * File: schemas.sql
+ * Purpose: Defines all table schemas for raw data, analytics, governance,
+ *          and AI insights including privacy-safe data structures.
+ * 
+ * Schema/Objects:
+ * - RAW_DATA tables: bank_customer_risk_summary, insurance_claim_risk_summary
+ * - ANALYTICS tables: risk_join_aggregated, risk_category_definitions,
+ *   regional_risk_trends, fraud_cross_signals
+ * - GOVERNANCE tables: access_audit_log, data_access_requests,
+ *   privacy_compliance_log
+ * - AI_INSIGHTS tables: ai_explanations, approved_questions_cache
+ * 
+ * Dependencies:
+ * - Requires setup.sql to be executed first
+ * - CROSSRISK_DB database must exist
+ *
+ * Privacy/Security:
+ * - All tables use masked/generalized fields (age_group, region bands)
+ * - Enforces k-anonymity with record_count >= 3 constraints
+ * - No direct PII storage (customer_id is pre-hashed)
+ *  
+ * Usage:
+ * snowsql -f snowflake/schemas.sql
+ *
+ * Author: Leslie Fernando
+ * Created: 2024 (Snowflake Hackathon)
+ ******************************************************************************/
+
 -- ============================================================================
 -- CrossRisk Platform - Schema Definitions
 -- ============================================================================
@@ -14,7 +43,8 @@ USE WAREHOUSE CROSSRISK_ETL_WH;
 
 USE SCHEMA RAW_DATA;
 
--- Bank customer risk summary (masked at source)
+-- Bank customer risk summary table
+-- Contains pre-masked banking data with generalized fields for privacy
 CREATE OR REPLACE TABLE bank_customer_risk_summary (
     customer_id VARCHAR(50) NOT NULL,           -- Hashed customer identifier
     age_group VARCHAR(20) NOT NULL,             -- Age bracket (e.g., '25-34', '35-44')
@@ -32,7 +62,8 @@ CREATE OR REPLACE TABLE bank_customer_risk_summary (
     CONSTRAINT pk_bank PRIMARY KEY (customer_id)
 );
 
--- Insurance claim risk summary (masked at source)
+-- Insurance claim risk summary table
+-- Contains pre-masked insurance data with privacy-safe aggregations
 CREATE OR REPLACE TABLE insurance_claim_risk_summary (
     policy_id VARCHAR(50) NOT NULL,             -- Hashed policy identifier
     customer_id VARCHAR(50) NOT NULL,           -- Hashed customer identifier (linkable)
@@ -58,7 +89,8 @@ CREATE OR REPLACE TABLE insurance_claim_risk_summary (
 
 USE SCHEMA ANALYTICS;
 
--- Combined risk profile (privacy-safe aggregations only)
+-- Combined risk profile table
+-- Aggregates cross-organizational risk data with k-anonymity enforcement
 CREATE OR REPLACE TABLE risk_join_aggregated (
     analysis_id VARCHAR(50) NOT NULL,
     age_group VARCHAR(20) NOT NULL,

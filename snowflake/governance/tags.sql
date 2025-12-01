@@ -1,3 +1,29 @@
+/*******************************************************************************
+ * File: governance/tags.sql
+ * Purpose: Creates and applies semantic tags for data classification,
+ *          compliance tracking, and governance metadata management.
+ * 
+ * Schema/Objects:
+ * - Tags: sensitivity_level, regulatory_requirement, retention_policy,
+ *   business_criticality, data_owner, update_frequency
+ * - Applied to: CROSSRISK_DB, all schemas, and critical tables
+ * 
+ * Dependencies:
+ * - Requires setup.sql and schemas.sql to be executed first
+ * - Requires TAG ADMIN privileges
+ *
+ * Privacy/Security:
+ * - Enables automated policy enforcement based on tag values
+ * - Supports compliance reporting and audit requirements
+ * - Tags identify GDPR, CCPA, and other regulatory data
+ *  
+ * Usage:
+ * snowsql -f snowflake/governance/tags.sql
+ *
+ * Author: Leslie Fernando
+ * Created: 2024 (Snowflake Hackathon)
+ ******************************************************************************/
+
 -- ============================================================================
 -- CrossRisk Platform - Governance Tags
 -- ============================================================================
@@ -11,7 +37,8 @@ USE SCHEMA GOVERNANCE;
 -- CREATE GOVERNANCE TAGS
 -- ============================================================================
 
--- Data sensitivity classification
+-- Data sensitivity classification tag
+-- Drives access control and masking policy decisions
 CREATE TAG IF NOT EXISTS sensitivity_level 
     ALLOWED_VALUES 'PUBLIC', 'INTERNAL', 'CONFIDENTIAL', 'HIGHLY_CONFIDENTIAL'
     COMMENT = 'Data sensitivity classification for access control';

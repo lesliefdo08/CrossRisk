@@ -1,254 +1,316 @@
-# CrossRisk: Demo Script
+# CrossRisk Demo Script
 
-**Duration**: 3-5 minutes  
-**Audience**: Hackathon judges, technical evaluators
+**For Judges and Evaluators**
 
----
-
-## 🎬 Opening Hook (30 seconds)
-
-"What if I told you that the fraud pattern that just cost your bank $2 million could have been detected weeks earlier—but only by looking at insurance data? And what if I said you could do that without ever exposing a single customer record?"
-
-**[Show title slide: CrossRisk - Privacy-Safe Cross-Organization Risk Analytics]**
-
-"That's exactly what CrossRisk does. Let me show you."
+This script walks through the key features of CrossRisk in a logical sequence. Total demo time: 10-12 minutes.
 
 ---
 
-## 📊 Part 1: The Problem (30 seconds)
+## Setup (1 minute)
 
-**[Navigate to README or show problem statement slide]**
-
-"Financial institutions face a dilemma:
-- Individual organizations miss fraud patterns that span multiple industries
-- But sharing raw customer data violates GDPR, CCPA, and privacy laws
-- Traditional approaches are slow, manual, and risky
-
-The question is: Can we collaborate on fraud detection while maintaining absolute privacy?"
-
----
-
-## 🛡️ Part 2: The Solution - Privacy First (60 seconds)
-
-**[Navigate to Streamlit Home Dashboard]**
-
-"CrossRisk is built entirely in Snowflake with three core privacy protections:
-
-**First: K-Anonymity** - Every aggregation contains at least 3 customers. Watch what happens if I try to view a small group..."
-
-**[Show: Navigate to Risk Explorer, set filters to show attempted small group]**
-
-"The system automatically filters out segments smaller than k=3. Privacy is enforced at the database level—not just in the application."
-
-**Second: Dynamic Masking**
-
-**[Show: Execute query showing masked customer IDs]**
-
-```sql
-SELECT customer_id, risk_score FROM RAW_DATA.bank_customer_risk_summary LIMIT 5;
+If running with Snowflake:
+```bash
+cd CrossRisk/app
+streamlit run Home.py
 ```
 
-"Customer IDs are automatically masked based on my role. Raw data never leaves the secure clean room."
-
-**Third: Complete Audit Trail**
-
-**[Navigate to: Governance & Audit page]**
-
-"Every query, every access, completely logged. Compliance teams have full visibility."
+If running in offline demo mode (no Snowflake):
+- Application automatically detects missing credentials
+- Switches to sample data
+- Full functionality available with realistic data
 
 ---
 
-## 🤖 Part 3: AI-Powered Insights (60 seconds)
+## 1. Home Page - Platform Overview (2 minutes)
 
-**[Navigate to: Pre-Approved Questions page]**
+**Show**: Main dashboard with key metrics
 
-"Here's where Snowflake Cortex shines. We've pre-approved curated analytics questions..."
+**Highlight**:
+- Total customers analyzed across both organizations
+- Average composite risk score
+- Risk category distribution (pie chart)
+- Regional risk heatmap
 
-**[Select: 'Which age groups show the highest risk levels?']**
+**Key Points**:
+- Data combines banking and insurance sources
+- All visualizations use aggregated data (k≥3)
+- Notice the offline mode indicator if in demo mode
 
-"The system runs the analysis AND generates a natural language explanation:"
-
-**[Point to AI summary]**
-
-"'The 25-34 age group shows elevated risk, primarily driven by high transaction velocity combined with multiple insurance claim flags...'
-
-This isn't just charts—it's actionable intelligence in plain English that any stakeholder can understand."
-
-**[Navigate to: Fraud Pattern Detection question]**
-
-"Even more powerful: cross-organizational fraud detection."
-
-**[Show fraud correlation chart]**
-
-"Here we've identified customers with BOTH banking fraud flags AND suspicious insurance claims. The system detected this pattern, calculated an 85% confidence score, and explained what it means."
+**Narrative**:
+"CrossRisk provides a unified risk view across banking and insurance data. The platform maintains k-anonymity by ensuring every segment contains at least 3 customers. This dashboard shows the overall risk landscape with composite scores calculated from both data sources."
 
 ---
 
-## 🔍 Part 4: Interactive Exploration (45 seconds)
+## 2. Pre-Approved Questions (3 minutes)
 
-**[Navigate to: Risk Explorer]**
+**Navigate**: Click "Pre-Approved Questions" in sidebar
 
-"Analysts can explore the data interactively with multiple filters..."
+**Show**:
+- Question selector with categories
+- AI-generated summaries for each question
 
-**[Apply filters: Select high-risk categories, specific region]**
+**Demo Flow**:
+1. Select "Overall risk distribution"
+   - Show pie chart of customer distribution
+   - Point out segment counts
+   
+2. Select "Age group risk analysis"
+   - Show risk trends across demographics
+   - Highlight age groups with elevated risk
+   
+3. Select "Regional risk hotspots"
+   - Show geographic risk patterns
+   - Discuss actionable insights
 
-"Every visualization respects privacy rules. Notice the segment sizes—all above our k=3 threshold."
+4. Select "Fraud pattern detection"
+   - Show cross-organizational fraud signals
+   - Explain confidence scores
 
-**[Click: 'Generate AI Explanation for Top Risk Segment']**
+**Key Points**:
+- Questions are pre-approved by governance teams
+- AI summaries provide context
+- Privacy maintained through aggregation
 
-"And with one click, get an AI explanation of any segment."
-
-**[Show generated explanation]**
-
----
-
-## ⚖️ Part 5: Organization Comparison (30 seconds)
-
-**[Navigate to: Organization Comparison page]**
-
-"One of CrossRisk's most powerful features: comparing risk profiles across organizations without exposing raw data."
-
-**[Show: Bank vs Insurance risk comparison charts]**
-
-"We can see correlation patterns, identify where organizations assess risk differently, and spot fraud signals that appear in both datasets."
-
-**[Point to correlation scatter plot]**
-
-"This 0.68 correlation coefficient tells us the organizations are largely aligned—but the outliers are where investigation is needed."
-
----
-
-## 🎯 Part 6: Real-World Impact (20 seconds)
-
-**[Return to Dashboard or show impact slide]**
-
-"CrossRisk has detected:
-- 47 customers with coordinated fraud signals across both organizations
-- Regional risk concentrations 3x higher than baseline
-- Fraud patterns with 91% confidence scores
-
-In production, this translates to millions in prevented fraud—while protecting customer privacy."
+**Narrative**:
+"These curated questions represent common risk analytics needs. Each question pulls from the secure clean room, applying privacy protections automatically. The AI summaries help non-technical stakeholders understand the findings."
 
 ---
 
-## 💻 Part 7: Technical Excellence (30 seconds)
+## 3. Risk Explorer - Interactive Filtering (2 minutes)
 
-**[Show: GitHub repo or architecture diagram]**
+**Navigate**: Click "Risk Explorer" in sidebar
 
-"The entire platform is production-ready:
-- 2,500+ lines of optimized SQL
-- Full Snowflake Cortex AI integration
-- Automated data pipelines with streams and tasks
-- Dynamic tables for real-time updates
-- Comprehensive governance and audit trails
+**Show**:
+- Interactive filters (age, region, occupation, risk category)
+- Dynamic visualizations
+- Real-time segment analysis
 
-Everything runs natively in Snowflake—no external dependencies, no data movement."
+**Demo Flow**:
+1. Apply filters:
+   - Select "45-54" age group
+   - Select "Northeast" region
+   - Risk score range: 60-100
+   
+2. Show results:
+   - Summary metrics update
+   - Bank vs Insurance risk scatter plot
+   - Regional breakdown
 
----
+3. Export data:
+   - Click CSV export button
+   - Show downloaded file
 
-## 🌟 Closing: Why This Matters (20 seconds)
+**Key Points**:
+- Minimum 3 customers per segment enforced
+- Empty results show warning message
+- All combinations maintain privacy
 
-**[Return to main dashboard]**
-
-"Financial fraud costs the global economy over $5 trillion annually. Privacy regulations make collaboration difficult.
-
-CrossRisk proves we don't have to choose between fighting fraud and protecting privacy. We can have both.
-
-This is AI for Good: using technology to make the financial system safer while ensuring privacy remains non-negotiable.
-
-Thank you. I'm happy to answer questions."
-
----
-
-## 🎤 Q&A Preparation
-
-### Expected Questions & Answers
-
-**Q: "How do you handle data from different schemas?"**
-A: "We use Snowflake's secure views and clean room architecture. Each organization loads masked data into their schema, then we aggregate across them with enforced privacy controls. No raw data ever crosses organizational boundaries."
-
-**Q: "What if someone tries to reverse-engineer customer identities?"**
-A: "Multiple safeguards: (1) k-anonymity prevents small group identification, (2) customer IDs are hashed and masked, (3) row access policies limit who can see what, (4) all queries are logged, (5) aggregation policies prevent drilling down below threshold."
-
-**Q: "How does the AI explanation work?"**
-A: "We use Snowflake Cortex—specifically their LLM capabilities. We pass aggregated risk metrics to the model with context, and it generates human-readable explanations. No PII is ever sent to the AI model."
-
-**Q: "Can this scale to real production volumes?"**
-A: "Absolutely. We're using Snowflake's dynamic tables for automatic refresh, efficient indexing, and the sample data demonstrates the pattern. The architecture supports millions of records with sub-3-second query response times."
-
-**Q: "What about regulatory compliance?"**
-A: "The platform is designed for GDPR, CCPA, and SOX compliance. Complete audit trails, purpose limitation, data minimization, and consent management can all be implemented. The governance dashboard provides compliance officers with full visibility."
-
-**Q: "How long did it take to build?"**
-A: "The full platform—including SQL scripts, Streamlit app, AI integration, and documentation—represents about [X] hours of focused development. The architecture leverages Snowflake's native features extensively, which accelerates development significantly."
-
-**Q: "What's the business model?"**
-A: "CrossRisk could operate as:
-1. SaaS platform for consortiums (subscription model)
-2. Licensed technology for enterprises
-3. Open-source core with enterprise support
-4. Industry-specific implementations (banking, insurance, healthcare)"
+**Narrative**:
+"The Risk Explorer lets analysts drill into specific segments while maintaining privacy guarantees. Notice if we filter too aggressively, we get warnings about k-anonymity violations. The system prevents any query that could expose individual customers."
 
 ---
 
-## 🎥 Demo Tips
+## 4. Organization Comparison (2 minutes)
 
-### Before Starting
-- [ ] Clear browser history/cache
-- [ ] Have Snowflake UI and Streamlit app open in separate tabs
-- [ ] Test all queries run quickly
-- [ ] Have backup screenshots ready
-- [ ] Check audio/video quality
+**Navigate**: Click "Organization Comparison" in sidebar
 
-### During Demo
-- **Pace yourself**: Don't rush through privacy explanations
-- **Show, don't just tell**: Execute actual queries, not just slides
-- **Highlight AI**: The Cortex integration is a key differentiator
-- **Emphasize "for Good"**: Connect features to social impact
-- **Be enthusiastic**: Your energy matters
+**Show**:
+- Side-by-side bank vs insurance metrics
+- Regional comparison charts
+- Age group risk trends
+- Correlation analysis
 
-### If Things Go Wrong
-- **Connection issue**: Switch to screenshots + explanation
-- **Query slow**: "While this loads, let me explain the architecture..."
-- **Error message**: "That's actually a good thing—the privacy controls prevented that query"
+**Demo Flow**:
+1. Overview comparison:
+   - Compare average risk scores
+   - Show risk ranges
+   
+2. Regional analysis:
+   - Grouped bar chart by region
+   - Risk difference visualization
+   
+3. Correlation scatter plot:
+   - Bank risk vs Insurance risk
+   - Correlation coefficient
+   - Fraud flag overlap
 
-### Strong Closing
-End with dashboard visible showing metrics + AI insights. Leave them with the image of a working, polished platform that solves a real problem.
+**Key Points**:
+- Reveals patterns invisible to single organizations
+- Correlation analysis shows alignment (or divergence)
+- Customers with flags in both systems require attention
 
----
-
-## 📸 Key Screenshots to Have Ready
-
-1. Dashboard with metrics
-2. K-anonymity enforcement message
-3. AI-generated explanation
-4. Fraud detection results
-5. Compliance dashboard
-6. Architecture diagram
-7. Sample data showing masking
+**Narrative**:
+"This view shows the power of cross-organizational analytics. We can see where banking and insurance risk assessments align or diverge. The correlation analysis helps validate risk models and identify customers who appear risky across both domains."
 
 ---
 
-## ⏱️ Time Management
+## 5. Governance & Compliance (2 minutes)
 
-- **3-Minute Version**: Parts 1, 2, 3, 7 (skip interactive exploration)
-- **5-Minute Version**: All parts with quick transitions
-- **7-Minute Version**: All parts + additional technical details
+**Navigate**: Click "Governance & Audit" in sidebar
 
-**Always leave 1-2 minutes for Q&A if time permits**
+**Show**:
+- Compliance status dashboard
+- Access audit trail
+- Privacy metrics
+- System health check
+
+**Demo Flow**:
+1. Compliance overview:
+   - Show passed/failed/warning checks
+   - K-anonymity compliance status
+   
+2. Access audit:
+   - Recent queries logged
+   - User activity patterns
+   - Anomaly detection
+
+3. Privacy metrics:
+   - Masking policies active
+   - Minimum group sizes
+   - Protection measures
+
+4. Run health check:
+   - Click "Run System Health Check"
+   - Show diagnostic results
+
+**Key Points**:
+- Every data access is logged
+- Compliance checks run automatically
+- Anomalies flagged for review
+- Exportable audit reports
+
+**Narrative**:
+"Governance isn't an afterthought—it's built into the platform. Every query is logged, privacy checks run continuously, and compliance teams have full visibility. This dashboard would be essential for regulatory audits."
 
 ---
 
-## 🎯 Key Messages to Emphasize
+## 6. Key Technical Features (1 minute)
 
-1. **Privacy is enforced, not optional** (k-anonymity, masking, audit)
-2. **AI makes insights accessible** (plain English, not just charts)
-3. **Real fraud detection results** (specific examples with confidence scores)
-4. **Production-ready** (complete code, documentation, deployment)
-5. **True AI for Good** (social impact + technical innovation)
+**Explain**:
+
+**Snowflake Features Used**:
+- Dynamic Tables (automated refresh)
+- Masking Policies (PII protection)
+- Row Access Policies (risk-based filtering)
+- Cortex AI (natural language summaries)
+- Streams & Tasks (real-time pipeline)
+
+**Privacy Guarantees**:
+- K-anonymity (k≥3) enforced on all aggregations
+- Dynamic masking based on user roles
+- Row-level access control
+- Complete audit trail
+
+**AI Capabilities**:
+- Natural language explanations
+- Anomaly detection
+- Risk pattern interpretation
 
 ---
 
-**Good luck! You've built something remarkable. Now go show them why it matters.**
+## 7. Offline Demo Mode (30 seconds)
 
-🚀 **Remember**: This isn't just a demo—it's proof that we can build powerful AI while respecting privacy. That's the future of data collaboration.
+**Show**:
+- Info banner indicating offline mode
+- Full functionality with sample data
+- No Snowflake credentials required
+
+**Key Points**:
+- Application detects missing Snowflake connection
+- Automatically generates realistic sample data
+- All features work identically
+- Perfect for demos and testing
+
+**Narrative**:
+"The application includes a complete offline mode. When Snowflake credentials aren't available, it automatically switches to sample data. This makes it easy to demo the interface without requiring a Snowflake account."
+
+---
+
+## 8. Closing Points (30 seconds)
+
+**Emphasize**:
+
+**Why This Matters**:
+- Fraud patterns only visible across organizations
+- Privacy protection enables collaboration
+- Built entirely on Snowflake platform
+- Production-ready governance
+
+**Real-World Impact**:
+- Banks reduce fraud false positives
+- Insurance companies improve underwriting
+- Customers benefit from better risk assessment
+- Regulators get full transparency
+
+**Differentiators**:
+- No raw data sharing required
+- Real-time collaboration
+- AI-powered insights
+- Complete audit trail
+
+---
+
+## Q&A Talking Points
+
+**"How is privacy maintained?"**
+- K-anonymity ensures minimum 3 customers per segment
+- Dynamic masking protects PII
+- Row access policies restrict sensitive data
+- All aggregations prevent re-identification
+
+**"What Snowflake features are used?"**
+- Dynamic Tables for automated refresh
+- Masking Policies for PII protection
+- Cortex AI for natural language
+- Streams & Tasks for real-time pipeline
+- Secure Views for optimization safety
+
+**"Can this scale to production?"**
+- Yes - Snowflake handles millions of records
+- Dynamic Tables optimize performance
+- Caching reduces query costs
+- Role-based access scales to enterprise
+
+**"What about other organization types?"**
+- Architecture supports any organization
+- Healthcare + Insurance logical extension
+- Retail + Financial services possible
+- Clean room pattern generalizes
+
+**"How do customers consent?"**
+- Data already aggregated (no individuals)
+- Privacy policies cover collaborative analytics
+- K-anonymity means no individual identification
+- Opt-out would prevent inclusion in segments
+
+---
+
+## Technical Demo (If Time Permits)
+
+**Show SQL Scripts**:
+```bash
+# Open snowflake/dynamic_tables.sql
+# Show k-anonymity enforcement: HAVING COUNT(*) >= 3
+# Show masking policies in masking_policies.sql
+# Show Row Access Policies in access_policies.sql
+```
+
+**Show Code**:
+```bash
+# Open app/db_connection.py
+# Show offline mode detection
+# Show sample data generation
+```
+
+---
+
+## Reset Demo
+
+To reset for next viewing:
+1. Refresh browser (Ctrl+R)
+2. Clear cache if needed (Shift+F5)
+3. Restart Streamlit if required
+
+---
+
+**Remember**: Focus on business value first, then dive into technical implementation based on audience interest.

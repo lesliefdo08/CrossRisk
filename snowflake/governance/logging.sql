@@ -1,3 +1,32 @@
+/*******************************************************************************
+ * File: governance/logging.sql
+ * Purpose: Configures comprehensive audit logging, access monitoring, and
+ *          security analytics using Snowflake ACCOUNT_USAGE views.
+ * 
+ * Schema/Objects:
+ * - Views: v_sensitive_data_access, v_access_anomalies,
+ *   v_failed_access_attempts, v_masking_policy_references, v_user_sessions
+ * - Procedures: generate_daily_access_report, check_suspicious_activity,
+ *   export_audit_trail
+ * - Summary views: v_monthly_compliance_summary, v_role_access_summary
+ * 
+ * Dependencies:
+ * - Requires setup.sql, schemas.sql to be executed first
+ * - Requires access to SNOWFLAKE.ACCOUNT_USAGE schema
+ *
+ * Privacy/Security:
+ * - Tracks all access to sensitive data for compliance audits
+ * - Detects anomalous access patterns (high volume, off-hours)
+ * - Monitors failed authentication and authorization attempts
+ * - Provides SOX, GDPR Article 30 compliance reporting
+ *  
+ * Usage:
+ * snowsql -f snowflake/governance/logging.sql
+ *
+ * Author: Leslie Fernando
+ * Created: 2024 (Snowflake Hackathon)
+ ******************************************************************************/
+
 -- ============================================================================
 -- CrossRisk Platform - Audit Logging Configuration
 -- ============================================================================
@@ -12,6 +41,7 @@ USE SCHEMA GOVERNANCE;
 -- ============================================================================
 
 -- Create view to monitor all queries against sensitive tables
+-- Captures query metadata from ACCOUNT_USAGE for compliance tracking
 CREATE OR REPLACE SECURE VIEW v_sensitive_data_access AS
 SELECT 
     query_id,
@@ -44,6 +74,7 @@ ORDER BY start_time DESC;
 -- ============================================================================
 
 -- View to identify unusual access patterns
+-- Detects high-frequency queries, large extractions, and off-hours access
 CREATE OR REPLACE VIEW v_access_anomalies AS
 SELECT 
     user_name,

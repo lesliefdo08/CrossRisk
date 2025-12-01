@@ -1,3 +1,32 @@
+/*******************************************************************************
+ * File: tasks/tasks.sql
+ * Purpose: Creates automated Snowflake tasks for scheduled data pipeline
+ *          execution, analytics refresh, compliance checks, and monitoring.
+ * 
+ * Schema/Objects:
+ * - Tasks: crossrisk_main_orchestrator (root task), refresh_on_bank_changes,
+ *   refresh_on_insurance_changes, generate_ai_insights_task,
+ *   check_compliance_hourly, detect_fraud_patterns_task, and more
+ * - Procedures: resume_all_tasks, suspend_all_tasks, get_task_status
+ * - Schedules: CRON-based (hourly, every 4-6 hours, daily, weekly)
+ * 
+ * Dependencies:
+ * - Requires all previous scripts executed (setup, schemas, analytics, streams)
+ * - Requires TASKADMIN role or EXECUTE TASK privilege
+ *
+ * Privacy/Security:
+ * - Automated compliance checks run hourly
+ * - Suspicious access monitoring every 2 hours
+ * - Audit log archival runs weekly
+ *  
+ * Usage:
+ * snowsql -f snowflake/tasks/tasks.sql
+ * -- Then call: CALL resume_all_tasks(); to activate
+ *
+ * Author: Leslie Fernando
+ * Created: 2024 (Snowflake Hackathon)
+ ******************************************************************************/
+
 -- ============================================================================
 -- CrossRisk Platform - Automated Tasks
 -- ============================================================================
@@ -13,6 +42,7 @@ USE WAREHOUSE CROSSRISK_ETL_WH;
 -- ============================================================================
 
 -- Main orchestration task that runs every 6 hours
+-- Root task coordinates the entire analytics pipeline execution
 CREATE OR REPLACE TASK crossrisk_main_orchestrator
     WAREHOUSE = CROSSRISK_ETL_WH
     SCHEDULE = 'USING CRON 0 */6 * * * UTC'  -- Every 6 hours
@@ -25,6 +55,7 @@ AS
 -- ============================================================================
 
 -- Task to refresh analytics when bank data changes
+-- Monitors bank_data_changes stream and triggers on new data
 CREATE OR REPLACE TASK refresh_on_bank_changes
     WAREHOUSE = CROSSRISK_ETL_WH
     AFTER crossrisk_main_orchestrator
