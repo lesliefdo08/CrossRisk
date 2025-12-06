@@ -283,7 +283,6 @@ try:
                 x='BANK_RISK',
                 y='INSURANCE_RISK',
                 title='Bank Risk vs Insurance Risk Correlation',
-                trendline='ols',
                 labels={
                     'BANK_RISK': 'Bank Risk Score',
                     'INSURANCE_RISK': 'Insurance Risk Score'

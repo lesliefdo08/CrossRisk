@@ -229,7 +229,9 @@ try:
         with col2:
             st.markdown("#### Regional Summary")
             display_df = regional_df.copy()
-            display_df.columns = ['Region', 'Avg Risk', 'Customers', 'Segments']
+            # Ensure column names match what query returns
+            if len(display_df.columns) == 4:
+                display_df.columns = ['Region', 'Avg Risk', 'Customers', 'Segments']
             st.dataframe(display_df, use_container_width=True, hide_index=True)
     else:
         st.info("No regional data available")

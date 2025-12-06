@@ -155,6 +155,177 @@ def get_sample_compliance_log() -> pd.DataFrame:
     _sample_data_cache['compliance'] = compliance
     return compliance.copy()
 
+def get_sample_bank_data() -> pd.DataFrame:
+    """Generate sample bank customer data"""
+    if 'bank_raw' in _sample_data_cache:
+        return _sample_data_cache['bank_raw'].copy()
+    
+    np.random.seed(42)
+    n_records = 100
+    
+    data = []
+    for i in range(n_records):
+        data.append({
+            'CUSTOMER_ID': f'CUST_{i+1:05d}',
+            'AGE_GROUP': np.random.choice(['18-24', '25-34', '35-44', '45-54', '55-64', '65+']),
+            'REGION': np.random.choice(['Northeast', 'Southeast', 'Midwest', 'West']),
+            'RISK_SCORE': round(np.random.uniform(15, 85), 2),
+            'FRAUD_FLAG_HISTORY': np.random.randint(0, 3)
+        })
+    
+    df = pd.DataFrame(data)
+    _sample_data_cache['bank_raw'] = df
+    return df.copy()
+
+def get_sample_insurance_data() -> pd.DataFrame:
+    """Generate sample insurance claim data"""
+    if 'insurance_raw' in _sample_data_cache:
+        return _sample_data_cache['insurance_raw'].copy()
+    
+    np.random.seed(43)
+    n_records = 100
+    
+    data = []
+    for i in range(n_records):
+        data.append({
+            'CUSTOMER_ID': f'CUST_{i+1:05d}',
+            'AGE_GROUP': np.random.choice(['18-24', '25-34', '35-44', '45-54', '55-64', '65+']),
+            'REGION': np.random.choice(['Northeast', 'Southeast', 'Midwest', 'West']),
+            'RISK_SCORE': round(np.random.uniform(15, 85), 2),
+            'SUSPICIOUS_CLAIM_FLAGS': np.random.randint(0, 3)
+        })
+    
+    df = pd.DataFrame(data)
+    _sample_data_cache['insurance_raw'] = df
+    return df.copy()
+
+def get_sample_correlation_data() -> pd.DataFrame:
+    """Generate sample correlation data for bank and insurance"""
+    if 'correlation' in _sample_data_cache:
+        return _sample_data_cache['correlation'].copy()
+    
+    np.random.seed(44)
+    n_records = 80
+    
+    data = []
+    for i in range(n_records):
+        age_group = np.random.choice(['18-24', '25-34', '35-44', '45-54', '55-64', '65+'])
+        region = np.random.choice(['Northeast', 'Southeast', 'Midwest', 'West'])
+        data.append({
+            'AGE_GROUP': age_group,
+            'REGION': region,
+            'BANK_RISK': round(np.random.uniform(20, 80), 2),
+            'INSURANCE_RISK': round(np.random.uniform(20, 80), 2),
+            'FRAUD_FLAG_HISTORY': np.random.randint(0, 2),
+            'SUSPICIOUS_CLAIM_FLAGS': np.random.randint(0, 2)
+        })
+    
+    df = pd.DataFrame(data)
+    _sample_data_cache['correlation'] = df
+    return df.copy()
+
+def get_sample_composite_risk_data() -> pd.DataFrame:
+    """Generate sample composite risk data"""
+    if 'composite_risk' in _sample_data_cache:
+        return _sample_data_cache['composite_risk'].copy()
+    
+    np.random.seed(45)
+    
+    risk_categories = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']
+    risk_drivers = ['Bank-Driven', 'Insurance-Driven', 'Balanced']
+    
+    data = []
+    for category in risk_categories:
+        for driver in risk_drivers:
+            data.append({
+                'COMPOSITE_RISK_CATEGORY': category,
+                'RISK_DRIVER': driver,
+                'SEGMENT_COUNT': np.random.randint(5, 30),
+                'CUSTOMER_COUNT': np.random.randint(50, 500)
+            })
+    
+    df = pd.DataFrame(data)
+    _sample_data_cache['composite_risk'] = df
+    return df.copy()
+
+def get_sample_access_audit_data() -> pd.DataFrame:
+    """Generate sample access audit log data"""
+    if 'access_audit' in _sample_data_cache:
+        return _sample_data_cache['access_audit'].copy()
+    
+    data = []
+    users = ['john.doe', 'jane.smith', 'bob.johnson']
+    roles = ['ANALYST', 'RISK_ANALYST', 'RISK_MANAGER']
+    
+    for i in range(20):
+        data.append({
+            'AUDIT_ID': f'A{i+1:04d}',
+            'USER_NAME': np.random.choice(users),
+            'ROLE_NAME': np.random.choice(roles),
+            'QUERY_TYPE': 'SELECT',
+            'QUERY_TEXT': 'SELECT * FROM analytics.risk_join_aggregated WHERE...',
+            'ROW_COUNT': np.random.randint(10, 500),
+            'EXECUTED_AT': pd.Timestamp.now() - pd.Timedelta(hours=np.random.randint(1, 72))
+        })
+    
+    df = pd.DataFrame(data)
+    _sample_data_cache['access_audit'] = df
+    return df.copy()
+
+def get_sample_user_access_summary() -> pd.DataFrame:
+    """Generate sample user access summary"""
+    if 'user_access' in _sample_data_cache:
+        return _sample_data_cache['user_access'].copy()
+    
+    data = [
+        {
+            'USER_NAME': 'john.doe',
+            'ROLE_NAME': 'ANALYST',
+            'QUERY_COUNT': 45,
+            'ROWS_ACCESSED': 12500,
+            'FIRST_ACCESS': pd.Timestamp.now() - pd.Timedelta(days=30),
+            'LAST_ACCESS': pd.Timestamp.now() - pd.Timedelta(hours=2)
+        },
+        {
+            'USER_NAME': 'jane.smith',
+            'ROLE_NAME': 'RISK_ANALYST',
+            'QUERY_COUNT': 67,
+            'ROWS_ACCESSED': 23400,
+            'FIRST_ACCESS': pd.Timestamp.now() - pd.Timedelta(days=25),
+            'LAST_ACCESS': pd.Timestamp.now() - pd.Timedelta(hours=1)
+        },
+        {
+            'USER_NAME': 'bob.johnson',
+            'ROLE_NAME': 'RISK_MANAGER',
+            'QUERY_COUNT': 28,
+            'ROWS_ACCESSED': 8900,
+            'FIRST_ACCESS': pd.Timestamp.now() - pd.Timedelta(days=20),
+            'LAST_ACCESS': pd.Timestamp.now() - pd.Timedelta(hours=5)
+        }
+    ]
+    
+    df = pd.DataFrame(data)
+    _sample_data_cache['user_access'] = df
+    return df.copy()
+
+def get_sample_timeline_data() -> pd.DataFrame:
+    """Generate sample access timeline data"""
+    if 'timeline' in _sample_data_cache:
+        return _sample_data_cache['timeline'].copy()
+    
+    data = []
+    for i in range(30):
+        data.append({
+            'ACCESS_DATE': (pd.Timestamp.now() - pd.Timedelta(days=30-i)).date(),
+            'QUERY_COUNT': np.random.randint(50, 200),
+            'UNIQUE_USERS': np.random.randint(3, 8),
+            'ROWS_ACCESSED': np.random.randint(5000, 25000)
+        })
+    
+    df = pd.DataFrame(data)
+    _sample_data_cache['timeline'] = df
+    return df.copy()
+
 class SnowflakeConnection:
     """Handle Snowflake connections with fallback to sample data"""
     
@@ -193,6 +364,31 @@ class SnowflakeConnection:
         sql_lower = sql.lower()
         
         try:
+            # SPECIAL CASE: Age group queries with risk category counts (Pre-Approved Questions)
+            if 'group by age_group' in sql_lower and 'critical_count' in sql_lower and 'risk_join_aggregated' in sql_lower:
+                df = get_sample_risk_data()
+                result = df.groupby('AGE_GROUP').agg({
+                    'RECORD_COUNT': 'sum',
+                    'COMPOSITE_RISK_SCORE': 'mean'
+                }).reset_index()
+                result.columns = ['AGE_GROUP', 'TOTAL_CUSTOMERS', 'AVG_RISK']
+                result['AVG_RISK'] = result['AVG_RISK'].round(2)
+                
+                # Add risk category counts
+                result['CRITICAL_COUNT'] = 0
+                result['HIGH_COUNT'] = 0
+                result['MEDIUM_COUNT'] = 0
+                result['LOW_COUNT'] = 0
+                
+                for age_group in result['AGE_GROUP'].unique():
+                    age_mask = df['AGE_GROUP'] == age_group
+                    result.loc[result['AGE_GROUP'] == age_group, 'CRITICAL_COUNT'] = int(df[age_mask & (df['RISK_CATEGORY'] == 'CRITICAL')]['RECORD_COUNT'].sum())
+                    result.loc[result['AGE_GROUP'] == age_group, 'HIGH_COUNT'] = int(df[age_mask & (df['RISK_CATEGORY'] == 'HIGH')]['RECORD_COUNT'].sum())
+                    result.loc[result['AGE_GROUP'] == age_group, 'MEDIUM_COUNT'] = int(df[age_mask & (df['RISK_CATEGORY'] == 'MEDIUM')]['RECORD_COUNT'].sum())
+                    result.loc[result['AGE_GROUP'] == age_group, 'LOW_COUNT'] = int(df[age_mask & (df['RISK_CATEGORY'] == 'LOW')]['RECORD_COUNT'].sum())
+                
+                return result
+            
             # Risk analysis queries
             if 'risk_join_aggregated' in sql_lower:
                 df = get_sample_risk_data()
@@ -209,22 +405,67 @@ class SnowflakeConnection:
                 
                 # Apply basic aggregations
                 if 'count(*)' in sql_lower and 'group by risk_category' in sql_lower:
-                    return df.groupby('RISK_CATEGORY').agg({
+                    result = df.groupby('RISK_CATEGORY').agg({
                         'ANALYSIS_ID': 'count',
-                        'RECORD_COUNT': 'sum'
-                    }).reset_index().rename(columns={'ANALYSIS_ID': 'SEGMENT_COUNT', 'RECORD_COUNT': 'CUSTOMER_COUNT'})
+                        'RECORD_COUNT': 'sum',
+                        'COMPOSITE_RISK_SCORE': 'mean'
+                    }).reset_index()
+                    result.columns = ['RISK_CATEGORY', 'SEGMENT_COUNT', 'CUSTOMER_COUNT', 'AVG_RISK_SCORE']
+                    result['AVG_RISK_SCORE'] = result['AVG_RISK_SCORE'].round(2)
+                    return result
                 
                 if 'group by age_group' in sql_lower:
-                    return df.groupby('AGE_GROUP').agg({
+                    # Base aggregation
+                    result = df.groupby('AGE_GROUP').agg({
                         'RECORD_COUNT': 'sum',
                         'COMPOSITE_RISK_SCORE': 'mean'
-                    }).reset_index().rename(columns={'RECORD_COUNT': 'TOTAL_CUSTOMERS', 'COMPOSITE_RISK_SCORE': 'AVG_RISK_SCORE'})
+                    }).reset_index()
+                    
+                    # Check what columns the query expects based on the SELECT statement
+                    if 'avg_risk_score' in sql_lower and 'customer_count' in sql_lower:
+                        # Home page query: expects AVG_RISK_SCORE and CUSTOMER_COUNT
+                        result.columns = ['AGE_GROUP', 'CUSTOMER_COUNT', 'AVG_RISK_SCORE']
+                        result['AVG_RISK_SCORE'] = result['AVG_RISK_SCORE'].round(2)
+                    else:
+                        # Pre-Approved Questions query: expects TOTAL_CUSTOMERS and AVG_RISK
+                        result.columns = ['AGE_GROUP', 'TOTAL_CUSTOMERS', 'AVG_RISK']
+                        result['AVG_RISK'] = result['AVG_RISK'].round(2)
+                        
+                        # Add risk category counts for Pre-Approved Questions
+                        result['CRITICAL_COUNT'] = 0
+                        result['HIGH_COUNT'] = 0
+                        result['MEDIUM_COUNT'] = 0
+                        result['LOW_COUNT'] = 0
+                        
+                        for age_group in result['AGE_GROUP'].unique():
+                            age_mask = df['AGE_GROUP'] == age_group
+                            result.loc[result['AGE_GROUP'] == age_group, 'CRITICAL_COUNT'] = int(df[age_mask & (df['RISK_CATEGORY'] == 'CRITICAL')]['RECORD_COUNT'].sum())
+                            result.loc[result['AGE_GROUP'] == age_group, 'HIGH_COUNT'] = int(df[age_mask & (df['RISK_CATEGORY'] == 'HIGH')]['RECORD_COUNT'].sum())
+                            result.loc[result['AGE_GROUP'] == age_group, 'MEDIUM_COUNT'] = int(df[age_mask & (df['RISK_CATEGORY'] == 'MEDIUM')]['RECORD_COUNT'].sum())
+                            result.loc[result['AGE_GROUP'] == age_group, 'LOW_COUNT'] = int(df[age_mask & (df['RISK_CATEGORY'] == 'LOW')]['RECORD_COUNT'].sum())
+                    
+                    return result
                 
                 if 'group by region' in sql_lower:
-                    return df.groupby('REGION').agg({
+                    agg_dict = {
                         'RECORD_COUNT': 'sum',
                         'COMPOSITE_RISK_SCORE': 'mean'
-                    }).reset_index().rename(columns={'RECORD_COUNT': 'CUSTOMER_COUNT', 'COMPOSITE_RISK_SCORE': 'AVG_RISK'})
+                    }
+                    result = df.groupby('REGION').agg(agg_dict).reset_index()
+                    # Check what columns the query expects
+                    if 'count(*)' in sql_lower:
+                        result['SEGMENT_COUNT'] = df.groupby('REGION').size().values
+                        result.columns = ['REGION', 'CUSTOMER_COUNT', 'AVG_RISK', 'SEGMENT_COUNT']
+                        result['AVG_RISK'] = result['AVG_RISK'].round(2)
+                    else:
+                        result.columns = ['REGION', 'CUSTOMER_COUNT', 'AVG_RISK']
+                        result['AVG_RISK'] = result['AVG_RISK'].round(2)
+                    return result
+                
+                # Composite risk query with CASE statements and GROUP BY
+                if 'case' in sql_lower and 'composite_risk_score >=' in sql_lower and 'group by composite_risk_category' in sql_lower:
+                    # Return composite risk data
+                    return get_sample_composite_risk_data()
                 
                 # Summary statistics
                 if 'count(*)' in sql_lower and 'sum(record_count)' in sql_lower:
@@ -247,7 +488,106 @@ class SnowflakeConnection:
             
             # Compliance queries
             elif 'privacy_compliance_log' in sql_lower:
-                return get_sample_compliance_log()
+                df = get_sample_compliance_log()
+                # Check if grouping is needed
+                if 'group by' in sql_lower and 'check_type' in sql_lower:
+                    result = df.groupby(['CHECK_TYPE', 'CHECK_RESULT']).size().reset_index(name='CHECK_COUNT')
+                    result['LAST_CHECK'] = df['CHECKED_AT'].max()
+                    return result
+                return df
+            
+            # Regional comparison queries (check FIRST - most specific)
+            elif 'b.region = i.region' in sql_lower and 'group by region' in sql_lower:
+                # This is a join query for regional comparison
+                regions = ['Northeast', 'Southeast', 'Midwest', 'West']
+                data = []
+                for region in regions:
+                    bank_risk = round(np.random.uniform(45, 75), 2)
+                    insurance_risk = round(np.random.uniform(45, 75), 2)
+                    data.append({
+                        'REGION': region,
+                        'BANK_AVG_RISK': bank_risk,
+                        'INSURANCE_AVG_RISK': insurance_risk,
+                        'CUSTOMER_COUNT': np.random.randint(50, 200),
+                        'RISK_DIFFERENCE': round(bank_risk - insurance_risk, 2)
+                    })
+                return pd.DataFrame(data)
+            
+            # Age group comparison queries (check SECOND - specific)
+            elif 'b.age_group = i.age_group' in sql_lower and 'group by age_group' in sql_lower:
+                age_groups = ['18-24', '25-34', '35-44', '45-54', '55-64', '65+']
+                data = []
+                for age in age_groups:
+                    bank_risk = round(np.random.uniform(40, 80), 2)
+                    insurance_risk = round(np.random.uniform(40, 80), 2)
+                    data.append({
+                        'AGE_GROUP': age,
+                        'BANK_AVG_RISK': bank_risk,
+                        'INSURANCE_AVG_RISK': insurance_risk,
+                        'CUSTOMER_COUNT': np.random.randint(30, 150),
+                        'RISK_GAP': round(abs(bank_risk - insurance_risk), 2)
+                    })
+                return pd.DataFrame(data)
+            
+            # Correlation queries (check THIRD - after more specific JOIN patterns)
+            elif 'b.customer_id = i.customer_id' in sql_lower or ('bank_risk' in sql_lower and 'insurance_risk' in sql_lower):
+                return get_sample_correlation_data()
+            
+            # Bank and Insurance UNION queries (overview comparison)
+            elif 'union all' in sql_lower and 'bank_customer_risk_summary' in sql_lower and 'insurance_claim_risk_summary' in sql_lower:
+                bank_df = get_sample_bank_data()
+                insurance_df = get_sample_insurance_data()
+                
+                bank_stats = {
+                    'ORGANIZATION': 'Bank',
+                    'RECORD_COUNT': len(bank_df),
+                    'AVG_RISK_SCORE': round(bank_df['RISK_SCORE'].mean(), 2),
+                    'MIN_RISK': round(bank_df['RISK_SCORE'].min(), 2),
+                    'MAX_RISK': round(bank_df['RISK_SCORE'].max(), 2),
+                    'RISK_STDDEV': round(bank_df['RISK_SCORE'].std(), 2)
+                }
+                
+                insurance_stats = {
+                    'ORGANIZATION': 'Insurance',
+                    'RECORD_COUNT': len(insurance_df),
+                    'AVG_RISK_SCORE': round(insurance_df['RISK_SCORE'].mean(), 2),
+                    'MIN_RISK': round(insurance_df['RISK_SCORE'].min(), 2),
+                    'MAX_RISK': round(insurance_df['RISK_SCORE'].max(), 2),
+                    'RISK_STDDEV': round(insurance_df['RISK_SCORE'].std(), 2)
+                }
+                
+                return pd.DataFrame([bank_stats, insurance_stats])
+            
+            # Bank raw data queries
+            elif 'bank_customer_risk_summary' in sql_lower:
+                return get_sample_bank_data()
+            
+            # Insurance raw data queries
+            elif 'insurance_claim_risk_summary' in sql_lower:
+                return get_sample_insurance_data()
+            
+            # Composite risk queries
+            elif 'composite_risk_category' in sql_lower or 'risk_driver' in sql_lower:
+                return get_sample_composite_risk_data()
+            
+            # Access audit log queries
+            elif 'access_audit_log' in sql_lower:
+                df = get_sample_access_audit_data()
+                # Handle timeline grouping FIRST (most specific with DATE and GROUP BY)
+                if 'date(executed_at)' in sql_lower and 'group by' in sql_lower:
+                    return get_sample_timeline_data()
+                # Handle user grouping
+                elif 'group by user_name' in sql_lower:
+                    return get_sample_user_access_summary()
+                # Handle summary queries (no GROUP BY)
+                elif 'count(*)' in sql_lower and 'count(distinct user_name)' in sql_lower and 'group by' not in sql_lower:
+                    return pd.DataFrame([{
+                        'TOTAL_QUERIES': len(df),
+                        'UNIQUE_USERS': df['USER_NAME'].nunique(),
+                        'ACTIVE_DAYS': 7,
+                        'TOTAL_ROWS_ACCESSED': df['ROW_COUNT'].sum()
+                    }])
+                return df
             
             # AI explanation queries
             elif 'explain_risk_anomaly' in sql_lower or 'ai_insights' in sql_lower:
